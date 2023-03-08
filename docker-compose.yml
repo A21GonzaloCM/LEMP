@@ -1,0 +1,52 @@
+version: "3"
+services:
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: core-php
+    volumes:
+      - ./webs:/var/www/html
+
+      
+  db:
+    image: mysql
+    ports:
+      - 3316:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: abc123.
+      MYSQL_DATABASE: presta
+      MYSQL_USER: prestauser
+      MYSQL_PASSWORD: prestapw
+    volumes:
+      - ./db/databases:/var/lib/mysql
+      - ./db:/docker-entrypoint-initdb.d
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - 80:80
+      - 443:443
+    links:
+      - php
+    volumes:
+      - ./webs:/var/www/html 
+      - ./cert:/etc/letsencrypt
+      - ./nginx:/etc/nginx/conf.d 
+      - ./symfony:/var/www/html 
+      - ./log/nginx:/var/log/nginx/
+
+  symfony:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: sv-symfony
+    volumes:
+      - ./symfony:/var/www/html/symfony
+      - ./dev/.env:/var/www/html/symfony/.env
+  # phpmyadmin:
+  #   image: phpmyadmin
+
+
+volumes:
+  basedatos:
